@@ -12,6 +12,11 @@
   let confirmCallback = null;
 
   /* ---------------- Utilities ---------------- */
+  const STORAGE_KEYS = {
+    songs: 'setlist-creator.songs',
+    setlists: 'setlist-creator.setlists'
+  };
+
   function uid(){
     if(window.crypto && crypto.randomUUID) return crypto.randomUUID();
     return 'id-' + Date.now() + '-' + Math.random().toString(16).slice(2);
@@ -20,6 +25,22 @@
     return (str||'').replace(/[&<>"']/g, function(c){
       return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
     });
+  }
+  function readStorage(key, fallback){
+    try{
+      const raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : fallback;
+    }catch (error){
+      return fallback;
+    }
+  }
+  function writeStorage(key, value){
+    try{
+      localStorage.setItem(key, JSON.stringify(value));
+      return true;
+    }catch (error){
+      return false;
+    }
   }
   function showToast(msg){
     const t = document.getElementById('toast');
@@ -37,30 +58,20 @@
 
   /* ---------------- Storage ---------------- */
   async function loadData(){
-    try{
-      const r = await window.storage.get('song-library', false);
-      songs = r && r.value ? JSON.parse(r.value) : [];
-    }catch(e){ songs = []; }
-    try{
-      const r = await window.storage.get('setlists', false);
-      setlists = r && r.value ? JSON.parse(r.value) : [];
-    }catch(e){ setlists = []; }
+    songs = readStorage(STORAGE_KEYS.songs, []);
+    setlists = readStorage(STORAGE_KEYS.setlists, []);
     renderSongGrid();
     renderSetlistSelect();
     renderBuildLibraryList();
     renderOrderList();
   }
   async function saveSongs(){
-    try{
-      const r = await window.storage.set('song-library', JSON.stringify(songs), false);
-      if(!r) showToast('Could not save — try again');
-    }catch(e){ showToast('Could not save — try again'); }
+    const ok = writeStorage(STORAGE_KEYS.songs, songs);
+    if(!ok) showToast('Could not save — try again');
   }
   async function saveSetlists(){
-    try{
-      const r = await window.storage.set('setlists', JSON.stringify(setlists), false);
-      if(!r) showToast('Could not save — try again');
-    }catch(e){ showToast('Could not save — try again'); }
+    const ok = writeStorage(STORAGE_KEYS.setlists, setlists);
+    if(!ok) showToast('Could not save — try again');
   }
 
   /* ---------------- Tabs ---------------- */
