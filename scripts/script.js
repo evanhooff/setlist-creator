@@ -33,7 +33,16 @@
   function getSupabaseClient(){
     if (!isSupabaseConfigured() || !window.supabase) return null;
     const { url, anonKey } = getSupabaseConfig();
-    return window.supabase.createClient(url, anonKey);
+    const cacheKey = '__SETLIST_CREATOR_SUPABASE_CLIENT__';
+    const configSignature = `${url}|${anonKey}`;
+
+    if (!window[cacheKey] || window[cacheKey].__SETLIST_CREATOR_CONFIG__ !== configSignature) {
+      const client = window.supabase.createClient(url, anonKey);
+      client.__SETLIST_CREATOR_CONFIG__ = configSignature;
+      window[cacheKey] = client;
+    }
+
+    return window[cacheKey];
   }
 
   async function waitForSupabaseConfig() {
