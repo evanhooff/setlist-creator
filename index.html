@@ -21,6 +21,7 @@
       <button class="tab" data-tab="build">Setlists</button>
     </nav>
     <div id="storage-status" class="storage-status" aria-live="polite">Checking storage…</div>
+    <button class="btn btn-ghost btn-sm" id="auth-lock-btn" type="button">Lock</button>
   </header>
 
   <!-- LIBRARY VIEW -->
@@ -135,6 +136,20 @@ Key: Bm
     <div class="modal-actions">
       <button class="btn btn-ghost" id="confirm-cancel">Cancel</button>
       <button class="btn btn-danger" id="confirm-ok" style="background:var(--red);color:#fff;">Delete</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="auth-modal-overlay">
+  <div class="modal" style="max-width:360px;">
+    <h2 id="auth-modal-title">Enter password</h2>
+    <div class="field">
+      <label for="auth-password-input">Password</label>
+      <input type="password" id="auth-password-input" placeholder="Enter the admin password">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="auth-modal-cancel" type="button">Cancel</button>
+      <button class="btn btn-accent" id="auth-modal-action" type="button">Unlock</button>
     </div>
   </div>
 </div>

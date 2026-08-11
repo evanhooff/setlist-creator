@@ -16,6 +16,77 @@
     songs: 'setlist-creator.songs',
     setlists: 'setlist-creator.setlists'
   };
+  const AUTH_KEYS = {
+    session: 'setlist-creator.auth.session'
+  };
+
+  function isAuthUnlocked(){
+    return localStorage.getItem(AUTH_KEYS.session) === 'true';
+  }
+
+  function setAuthUnlocked(value){
+    if (value) {
+      localStorage.setItem(AUTH_KEYS.session, 'true');
+    } else {
+      localStorage.removeItem(AUTH_KEYS.session);
+    }
+    updateAuthUI();
+  }
+
+  function updateAuthUI(){
+    const lockBtn = document.getElementById('auth-lock-btn');
+    if (lockBtn) {
+      lockBtn.textContent = isAuthUnlocked() ? 'Lock' : 'Unlock';
+    }
+
+    const addBtn = document.getElementById('add-song-btn');
+    const bulkBtn = document.getElementById('bulk-import-btn');
+    const saveSetlistBtn = document.getElementById('save-setlist-btn');
+    const newSetlistBtn = document.getElementById('new-setlist-btn');
+    const deleteSetlistBtn = document.getElementById('delete-setlist-btn');
+    const controls = [addBtn, bulkBtn, saveSetlistBtn, newSetlistBtn, deleteSetlistBtn];
+    controls.forEach(btn => {
+      if (!btn) return;
+      const shouldDisable = !isAuthUnlocked();
+      btn.disabled = shouldDisable;
+      btn.style.opacity = shouldDisable ? '0.5' : '';
+      btn.style.pointerEvents = shouldDisable ? 'none' : '';
+    });
+
+    const storageStatus = document.getElementById('storage-status');
+    if (storageStatus && !isAuthUnlocked()) {
+      storageStatus.textContent = 'Editing locked';
+      storageStatus.classList.remove('connected', 'fallback', 'error');
+      storageStatus.classList.add('error');
+    }
+  }
+
+  function requireAuthForWrite(){
+    if (!isAuthUnlocked()) {
+      openAuthModal();
+      showToast('Enter the password to edit');
+      return false;
+    }
+    return true;
+  }
+
+  function openAuthModal(){
+    const overlay = document.getElementById('auth-modal-overlay');
+    const input = document.getElementById('auth-password-input');
+    input.value = '';
+    overlay.classList.add('open');
+    setTimeout(() => input.focus(), 50);
+  }
+
+  function closeAuthModal(){
+    document.getElementById('auth-modal-overlay').classList.remove('open');
+  }
+
+  function initializeAuth(){
+    if (!isAuthUnlocked()) {
+      openAuthModal();
+    }
+  }
 
   function getSupabaseConfig(){
     const cfg = window.SETLIST_CREATOR_CONFIG || {};
@@ -250,8 +321,10 @@
     if(!card) return;
     const id = card.dataset.id;
     if(e.target.classList.contains('edit-song')){
+      if (!requireAuthForWrite()) return;
       openSongModal(songs.find(s=>s.id===id));
     }else if(e.target.classList.contains('delete-song')){
+      if (!requireAuthForWrite()) return;
       const song = songs.find(s=>s.id===id);
       showConfirm('Delete song?', '"' + song.title + '" will be removed from your library (it stays in any setlists that already used it, shown as its old title).', async ()=>{
         songs = songs.filter(s=>s.id!==id);
@@ -272,11 +345,15 @@
     document.getElementById('song-modal-overlay').classList.add('open');
     setTimeout(()=>document.getElementById('song-title-input').focus(), 50);
   }
-  document.getElementById('add-song-btn').addEventListener('click', ()=>openSongModal(null));
+  document.getElementById('add-song-btn').addEventListener('click', ()=>{
+    if (!requireAuthForWrite()) return;
+    openSongModal(null);
+  });
   document.getElementById('song-modal-cancel').addEventListener('click', ()=>{
     document.getElementById('song-modal-overlay').classList.remove('open');
   });
   document.getElementById('song-modal-save').addEventListener('click', async ()=>{
+    if (!requireAuthForWrite()) return;
     const title = document.getElementById('song-title-input').value.trim();
     const key = document.getElementById('song-key-input').value.trim();
     const content = document.getElementById('song-content-input').value;
@@ -296,6 +373,7 @@
 
   /* ---------------- Bulk import ---------------- */
   document.getElementById('bulk-import-btn').addEventListener('click', ()=>{
+    if (!requireAuthForWrite()) return;
     document.getElementById('bulk-textarea').value = '';
     document.getElementById('bulk-preview').textContent = '';
     document.getElementById('bulk-modal-overlay').classList.add('open');
@@ -326,6 +404,7 @@
     document.getElementById('bulk-preview').textContent = e.target.value.trim() ? ('Found ' + found.length + ' song' + (found.length===1?'':'s')) : '';
   });
   document.getElementById('bulk-modal-import').addEventListener('click', async ()=>{
+    if (!requireAuthForWrite()) return;
     const found = parseBulkImport(document.getElementById('bulk-textarea').value);
     if(found.length === 0){ showToast('No songs recognised — check the format'); return; }
     found.forEach(f=> songs.push({id:uid(), title:f.title, key:f.key, content:f.content}));
@@ -369,8 +448,12 @@
     document.getElementById('setlist-name').value = s.name;
     renderOrderList();
   });
-  document.getElementById('new-setlist-btn').addEventListener('click', newDraft);
+  document.getElementById('new-setlist-btn').addEventListener('click', ()=>{
+    if (!requireAuthForWrite()) return;
+    newDraft();
+  });
   document.getElementById('delete-setlist-btn').addEventListener('click', ()=>{
+    if (!requireAuthForWrite()) return;
     if(!draft || !draft.id){ showToast('Nothing to delete'); return; }
     const s = setlists.find(s=>s.id===draft.id);
     showConfirm('Delete setlist?', '"'+s.name+'" will be permanently removed.', async ()=>{
@@ -400,6 +483,7 @@
   }
   document.getElementById('build-search').addEventListener('input', renderBuildLibraryList);
   document.getElementById('build-library-list').addEventListener('click', (e)=>{
+    if (!requireAuthForWrite()) return;
     const row = e.target.closest('.pick-row');
     if(!row) return;
     if(!draft) newDraft();
@@ -432,6 +516,7 @@
     }).join('');
   }
   document.getElementById('setlist-order').addEventListener('click', (e)=>{
+    if (!requireAuthForWrite()) return;
     const row = e.target.closest('.order-row');
     if(!row || !draft) return;
     const idx = parseInt(row.dataset.index, 10);
@@ -459,6 +544,7 @@
     if(row) row.classList.remove('dragging');
   });
   document.getElementById('setlist-order').addEventListener('dragover', (e)=>{
+    if (!requireAuthForWrite()) return;
     e.preventDefault();
     const row = e.target.closest('.order-row');
     if(!row || dragIndex === null) return;
@@ -471,6 +557,7 @@
   });
 
   document.getElementById('save-setlist-btn').addEventListener('click', async ()=>{
+    if (!requireAuthForWrite()) return;
     const name = document.getElementById('setlist-name').value.trim();
     if(!draft) draft = {id:null, name:'', entries:[]};
     if(!name){ showToast('Give this setlist a name'); return; }
@@ -612,7 +699,58 @@
     closeJump();
   });
 
+  document.getElementById('auth-lock-btn').addEventListener('click', ()=>{
+    if (isAuthUnlocked()) {
+      setAuthUnlocked(false);
+      showToast('Editing locked');
+      openAuthModal();
+      return;
+    }
+    openAuthModal();
+  });
+
+  document.getElementById('auth-modal-cancel').addEventListener('click', ()=>{
+    closeAuthModal();
+    if (!isAuthUnlocked()) {
+      showToast('Editing locked');
+    }
+  });
+
+  document.getElementById('auth-modal-action').addEventListener('click', async ()=>{
+    const value = document.getElementById('auth-password-input').value.trim();
+    if (!value) {
+      showToast('Enter a password');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/validate-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: value })
+      });
+
+      if (!response.ok) {
+        throw new Error('Password check failed');
+      }
+
+      const result = await response.json();
+      if (result.valid) {
+        setAuthUnlocked(true);
+        closeAuthModal();
+        showToast('Unlocked');
+      } else {
+        showToast('Incorrect password');
+      }
+    } catch (error) {
+      console.error('Password validation failed:', error);
+      showToast('Password check failed');
+    }
+  });
+
   /* ---------------- Init ---------------- */
+  updateAuthUI();
   newDraft();
+  initializeAuth();
   loadData();
 })();
