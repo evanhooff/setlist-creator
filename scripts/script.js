@@ -17,6 +17,35 @@
     setlists: 'setlist-creator.setlists'
   };
 
+  function getSupabaseConfig(){
+    const cfg = window.SETLIST_CREATOR_CONFIG || {};
+    return {
+      url: (cfg.supabaseUrl || '').trim(),
+      anonKey: (cfg.supabaseAnonKey || '').trim()
+    };
+  }
+
+  function isSupabaseConfigured(){
+    const { url, anonKey } = getSupabaseConfig();
+    return Boolean(url && anonKey && !url.includes('YOUR_') && !anonKey.includes('YOUR_'));
+  }
+
+  function getSupabaseClient(){
+    if (!isSupabaseConfigured() || !window.supabase) return null;
+    const { url, anonKey } = getSupabaseConfig();
+    return window.supabase.createClient(url, anonKey);
+  }
+
+  async function waitForSupabaseConfig() {
+    if (isSupabaseConfigured()) return true;
+    setStorageStatus('Checking storage…', 'fallback');
+    for (let i = 0; i < 50; i++) {
+      if (isSupabaseConfigured()) return true;
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    return false;
+  }
+
   function uid(){
     if(window.crypto && crypto.randomUUID) return crypto.randomUUID();
     return 'id-' + Date.now() + '-' + Math.random().toString(16).slice(2);
@@ -55,9 +84,55 @@
     confirmCallback = onConfirm;
     document.getElementById('confirm-modal-overlay').classList.add('open');
   }
+  function setStorageStatus(label, tone){
+    const statusEl = document.getElementById('storage-status');
+    if (!statusEl) return;
+    statusEl.textContent = label;
+    statusEl.classList.remove('connected', 'fallback', 'error');
+    if (tone) statusEl.classList.add(tone);
+  }
 
   /* ---------------- Storage ---------------- */
   async function loadData(){
+    if (await waitForSupabaseConfig()) {
+      try{
+        const client = getSupabaseClient();
+        const [songsResponse, setlistsResponse] = await Promise.all([
+          client.from('songs').select('*').order('title', { ascending: true }),
+          client.from('setlists').select('*').order('date', { ascending: false })
+        ]);
+
+        if (songsResponse.error) throw songsResponse.error;
+        if (setlistsResponse.error) throw setlistsResponse.error;
+
+        songs = (songsResponse.data || []).map(song => ({
+          id: song.id,
+          title: song.title,
+          key: song.key || '',
+          content: song.content || ''
+        }));
+
+        setlists = (setlistsResponse.data || []).map(setlist => ({
+          id: setlist.id,
+          name: setlist.name,
+          date: setlist.date || '',
+          entries: Array.isArray(setlist.entries) ? setlist.entries : []
+        }));
+
+        setStorageStatus('Supabase connected', 'connected');
+        renderSongGrid();
+        renderSetlistSelect();
+        renderBuildLibraryList();
+        renderOrderList();
+        return;
+      }catch (error){
+        console.error('Supabase load failed:', error);
+        setStorageStatus('Supabase unavailable', 'error');
+        showToast('Supabase offline — loading local fallback');
+      }
+    }
+
+    setStorageStatus('Local fallback active', 'fallback');
     songs = readStorage(STORAGE_KEYS.songs, []);
     setlists = readStorage(STORAGE_KEYS.setlists, []);
     renderSongGrid();
@@ -65,11 +140,67 @@
     renderBuildLibraryList();
     renderOrderList();
   }
+
   async function saveSongs(){
+    if (await waitForSupabaseConfig()){
+      try{
+        const client = getSupabaseClient();
+        const payload = songs.map(song => ({
+          id: song.id,
+          title: song.title,
+          key: song.key || '',
+          content: song.content || ''
+        }));
+
+        const { error: clearError } = await client.from('songs').delete().neq('id', '');
+        if (clearError) throw clearError;
+
+        if (payload.length > 0){
+          const { error: insertError } = await client.from('songs').insert(payload);
+          if (insertError) throw insertError;
+        }
+        setStorageStatus('Supabase connected', 'connected');
+        return;
+      }catch (error){
+        console.error('Supabase save songs failed:', error);
+        setStorageStatus('Supabase unavailable', 'error');
+        showToast('Could not save to Supabase — using local fallback');
+      }
+    }
+
+    setStorageStatus('Local fallback active', 'fallback');
     const ok = writeStorage(STORAGE_KEYS.songs, songs);
     if(!ok) showToast('Could not save — try again');
   }
+
   async function saveSetlists(){
+    if (await waitForSupabaseConfig()){
+      try{
+        const client = getSupabaseClient();
+        const payload = setlists.map(setlist => ({
+          id: setlist.id,
+          name: setlist.name,
+          date: setlist.date || '',
+          entries: setlist.entries || []
+        }));
+
+        const { error: clearError } = await client.from('setlists').delete().neq('id', '');
+        if (clearError) throw clearError;
+
+        if (payload.length > 0){
+          const { error: insertError } = await client.from('setlists').insert(payload);
+          if (insertError) throw insertError;
+        }
+        setStorageStatus('Supabase connected', 'connected');
+        return;
+      }catch (error){
+        console.error('Supabase save setlists failed:', error);
+        setStorageStatus('Supabase unavailable', 'error');
+        showToast('Could not save to Supabase — using local fallback');
+      }
+    }
+
+    setStorageStatus('Local fallback active', 'fallback');
     const ok = writeStorage(STORAGE_KEYS.setlists, setlists);
     if(!ok) showToast('Could not save — try again');
   }

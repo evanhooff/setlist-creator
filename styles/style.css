@@ -44,6 +44,20 @@
     transition:background .15s, color .15s;
   }
   .tab.active{background:var(--amber);color:#1a1408;}
+  .storage-status{
+    font-size:11px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:var(--text-dim);
+    border:1px solid var(--border-solid);
+    background:var(--surface);
+    border-radius:999px;
+    padding:7px 10px;
+    white-space:nowrap;
+  }
+  .storage-status.connected{color:var(--teal);border-color:rgba(79,168,143,.35);background:rgba(79,168,143,.08);}
+  .storage-status.fallback{color:var(--amber);border-color:rgba(232,163,61,.35);background:rgba(232,163,61,.08);}
+  .storage-status.error{color:var(--red);border-color:rgba(217,100,90,.35);background:rgba(217,100,90,.08);}
   .view{display:none;padding-top:24px;}
   .view.active{display:block;}
 
