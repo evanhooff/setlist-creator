@@ -152,19 +152,16 @@
           content: song.content || ''
         }));
 
-        const { error: clearError } = await client.from('songs').delete().neq('id', '');
-        if (clearError) throw clearError;
-
         if (payload.length > 0){
-          const { error: insertError } = await client.from('songs').insert(payload);
-          if (insertError) throw insertError;
+          const { error } = await client.from('songs').upsert(payload, { onConflict: 'id' });
+          if (error) throw error;
         }
         setStorageStatus('Supabase connected', 'connected');
         return;
       }catch (error){
         console.error('Supabase save songs failed:', error);
         setStorageStatus('Supabase unavailable', 'error');
-        showToast('Could not save to Supabase — using local fallback');
+        showToast('Could not save to Supabase — check table/RLS and local fallback');
       }
     }
 
@@ -184,19 +181,16 @@
           entries: setlist.entries || []
         }));
 
-        const { error: clearError } = await client.from('setlists').delete().neq('id', '');
-        if (clearError) throw clearError;
-
         if (payload.length > 0){
-          const { error: insertError } = await client.from('setlists').insert(payload);
-          if (insertError) throw insertError;
+          const { error } = await client.from('setlists').upsert(payload, { onConflict: 'id' });
+          if (error) throw error;
         }
         setStorageStatus('Supabase connected', 'connected');
         return;
       }catch (error){
         console.error('Supabase save setlists failed:', error);
         setStorageStatus('Supabase unavailable', 'error');
-        showToast('Could not save to Supabase — using local fallback');
+        showToast('Could not save to Supabase — check table/RLS and local fallback');
       }
     }
 
