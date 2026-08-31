@@ -615,21 +615,37 @@
   }
 
   /* ---------------- Play view ---------------- */
-  const playTop = document.getElementById('play-top');
+  let playTop = null;
+  let playBody = null;
+  let playView = null;
   let playTopHideTimer = null;
+  function getPlayElements(){
+    if(!playTop) playTop = document.getElementById('play-top');
+    if(!playBody) playBody = document.getElementById('play-content');
+    if(!playView) playView = document.getElementById('play-view');
+    return { playTop, playBody, playView };
+  }
+  function setPlayViewOpen(isOpen){
+    const { playView: activePlayView } = getPlayElements();
+    if(!activePlayView) return;
+    activePlayView.classList.toggle('open', isOpen);
+    if(!isOpen) hidePlayTop();
+  }
   function showPlayTop(autoHide = true){
-    if(!playTop || !window.matchMedia('(max-width: 760px)').matches) return;
-    playTop.classList.add('visible');
+    const { playTop: activePlayTop } = getPlayElements();
+    if(!activePlayTop || !window.matchMedia('(max-width: 760px)').matches) return;
+    activePlayTop.classList.add('visible');
     if(!autoHide) return;
     clearTimeout(playTopHideTimer);
     playTopHideTimer = setTimeout(()=>{
-      playTop.classList.remove('visible');
+      activePlayTop.classList.remove('visible');
     }, 1000);
   }
   function hidePlayTop(){
-    if(!playTop) return;
+    const { playTop: activePlayTop } = getPlayElements();
+    if(!activePlayTop) return;
     clearTimeout(playTopHideTimer);
-    playTop.classList.remove('visible');
+    activePlayTop.classList.remove('visible');
   }
 
   document.getElementById('play-btn').addEventListener('click', openPlay);
@@ -638,15 +654,15 @@
     playSongs = draft.entries.map(en=>songs.find(s=>s.id===en.songId)).filter(Boolean);
     if(playSongs.length === 0){ showToast('No valid songs in this setlist'); return; }
     playIndex = 0;
+    const { playView: activePlayView } = getPlayElements();
     document.getElementById('play-setlist-name').textContent = draft.name || 'Setlist';
-    document.getElementById('play-view').classList.add('open');
+    if(activePlayView) activePlayView.classList.add('open');
     renderPlaySong();
     renderDots();
     showPlayTop(true);
   }
   document.getElementById('play-close').addEventListener('click', ()=>{
-    document.getElementById('play-view').classList.remove('open');
-    hidePlayTop();
+    setPlayViewOpen(false);
   });
   function renderPlaySong(){
     const s = playSongs[playIndex];
@@ -671,39 +687,45 @@
   document.getElementById('tap-left').addEventListener('click', prevSong);
   document.getElementById('tap-right').addEventListener('click', nextSong);
   document.addEventListener('keydown', (e)=>{
-    if(!document.getElementById('play-view').classList.contains('open')) return;
+    const { playView: activePlayView } = getPlayElements();
+    if(!activePlayView || !activePlayView.classList.contains('open')) return;
     if(e.key === 'ArrowRight') nextSong();
     if(e.key === 'ArrowLeft') prevSong();
-    if(e.key === 'Escape') document.getElementById('play-view').classList.remove('open');
+    if(e.key === 'Escape') setPlayViewOpen(false);
   });
   // swipe
   let touchStartX = null;
   let touchStartY = null;
-  const playBody = document.getElementById('play-content');
-  playBody.addEventListener('touchstart', (e)=>{
-    const touch = e.changedTouches[0];
-    touchStartX = touch.clientX;
-    touchStartY = touch.clientY;
-    if(window.innerWidth <= 760 && touchStartY <= 38){
-      showPlayTop(false);
-    }
-  }, {passive:true});
-  playBody.addEventListener('touchmove', (e)=>{
-    if(window.innerWidth > 760 || touchStartY === null) return;
-    const touch = e.changedTouches[0];
-    const dx = touch.clientX - touchStartX;
-    const dy = touch.clientY - touchStartY;
-    if(touchStartY <= 38 && dy > 18 && Math.abs(dx) < 55){
-      showPlayTop(false);
-    }
-  }, {passive:true});
-  playBody.addEventListener('touchend', (e)=>{
-    if(touchStartX === null) return;
-    const dx = e.changedTouches[0].clientX - touchStartX;
-    if(Math.abs(dx) > 55){ dx < 0 ? nextSong() : prevSong(); }
-    touchStartX = null;
-    touchStartY = null;
-  }, {passive:true});
+  function setupPlayBodySwipe(){
+    const { playBody: activePlayBody } = getPlayElements();
+    if(!activePlayBody || activePlayBody.dataset.swipeBound === 'true') return;
+    activePlayBody.dataset.swipeBound = 'true';
+    activePlayBody.addEventListener('touchstart', (e)=>{
+      const touch = e.changedTouches[0];
+      touchStartX = touch.clientX;
+      touchStartY = touch.clientY;
+      if(window.innerWidth <= 760 && touchStartY <= 38){
+        showPlayTop(false);
+      }
+    }, {passive:true});
+    activePlayBody.addEventListener('touchmove', (e)=>{
+      if(window.innerWidth > 760 || touchStartY === null) return;
+      const touch = e.changedTouches[0];
+      const dx = touch.clientX - touchStartX;
+      const dy = touch.clientY - touchStartY;
+      if(touchStartY <= 38 && dy > 18 && Math.abs(dx) < 55){
+        showPlayTop(false);
+      }
+    }, {passive:true});
+    activePlayBody.addEventListener('touchend', (e)=>{
+      if(touchStartX === null) return;
+      const dx = e.changedTouches[0].clientX - touchStartX;
+      if(Math.abs(dx) > 55){ dx < 0 ? nextSong() : prevSong(); }
+      touchStartX = null;
+      touchStartY = null;
+    }, {passive:true});
+  }
+  setupPlayBodySwipe();
 
   document.getElementById('font-plus').addEventListener('click', ()=>{
     playFontSize = Math.min(playFontSize+2, 32);
