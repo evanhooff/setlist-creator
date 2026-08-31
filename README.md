@@ -2,7 +2,10 @@
 Create setlists with custom notes
 
 # status
-WIP: first draft with manual copy-pasting from google docs
+- manual copy-paste songs from google docs
+- persistent storage/database with supabase
+- hide buttons on mobile landscape
 
 # next step(s)
-- create persistant storage
+- fix setlists not removing
+- fix refresh on dragging/scrolling screen
