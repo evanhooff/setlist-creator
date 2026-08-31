@@ -616,20 +616,26 @@
 
   /* ---------------- Play view ---------------- */
   let playTop = null;
+  let playBottom = null;
   let playBody = null;
   let playView = null;
   let playTopHideTimer = null;
+  let playBottomHideTimer = null;
   function getPlayElements(){
     if(!playTop) playTop = document.getElementById('play-top');
+    if(!playBottom) playBottom = document.getElementById('play-bottom');
     if(!playBody) playBody = document.getElementById('play-content');
     if(!playView) playView = document.getElementById('play-view');
-    return { playTop, playBody, playView };
+    return { playTop, playBottom, playBody, playView };
   }
   function setPlayViewOpen(isOpen){
     const { playView: activePlayView } = getPlayElements();
     if(!activePlayView) return;
     activePlayView.classList.toggle('open', isOpen);
-    if(!isOpen) hidePlayTop();
+    if(!isOpen){
+      hidePlayTop();
+      hidePlayBottom();
+    }
   }
   function showPlayTop(autoHide = true){
     const { playTop: activePlayTop } = getPlayElements();
@@ -647,6 +653,22 @@
     clearTimeout(playTopHideTimer);
     activePlayTop.classList.remove('visible');
   }
+  function showPlayBottom(autoHide = true){
+    const { playBottom: activePlayBottom } = getPlayElements();
+    if(!activePlayBottom) return;
+    activePlayBottom.classList.add('visible');
+    if(!autoHide) return;
+    clearTimeout(playBottomHideTimer);
+    playBottomHideTimer = setTimeout(()=>{
+      activePlayBottom.classList.remove('visible');
+    }, 1000);
+  }
+  function hidePlayBottom(){
+    const { playBottom: activePlayBottom } = getPlayElements();
+    if(!activePlayBottom) return;
+    clearTimeout(playBottomHideTimer);
+    activePlayBottom.classList.remove('visible');
+  }
 
   document.getElementById('play-btn').addEventListener('click', openPlay);
   function openPlay(){
@@ -660,6 +682,7 @@
     renderPlaySong();
     renderDots();
     showPlayTop(true);
+    showPlayBottom(true);
   }
   document.getElementById('play-close').addEventListener('click', ()=>{
     setPlayViewOpen(false);
