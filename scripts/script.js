@@ -615,6 +615,23 @@
   }
 
   /* ---------------- Play view ---------------- */
+  const playTop = document.getElementById('play-top');
+  let playTopHideTimer = null;
+  function showPlayTop(autoHide = true){
+    if(!playTop || !window.matchMedia('(max-width: 760px)').matches) return;
+    playTop.classList.add('visible');
+    if(!autoHide) return;
+    clearTimeout(playTopHideTimer);
+    playTopHideTimer = setTimeout(()=>{
+      playTop.classList.remove('visible');
+    }, 1000);
+  }
+  function hidePlayTop(){
+    if(!playTop) return;
+    clearTimeout(playTopHideTimer);
+    playTop.classList.remove('visible');
+  }
+
   document.getElementById('play-btn').addEventListener('click', openPlay);
   function openPlay(){
     if(!draft || draft.entries.length === 0){ showToast('Build a setlist first'); return; }
@@ -625,9 +642,11 @@
     document.getElementById('play-view').classList.add('open');
     renderPlaySong();
     renderDots();
+    showPlayTop(true);
   }
   document.getElementById('play-close').addEventListener('click', ()=>{
     document.getElementById('play-view').classList.remove('open');
+    hidePlayTop();
   });
   function renderPlaySong(){
     const s = playSongs[playIndex];
@@ -659,13 +678,31 @@
   });
   // swipe
   let touchStartX = null;
+  let touchStartY = null;
   const playBody = document.getElementById('play-content');
-  playBody.addEventListener('touchstart', (e)=>{ touchStartX = e.changedTouches[0].clientX; }, {passive:true});
+  playBody.addEventListener('touchstart', (e)=>{
+    const touch = e.changedTouches[0];
+    touchStartX = touch.clientX;
+    touchStartY = touch.clientY;
+    if(window.innerWidth <= 760 && touchStartY <= 38){
+      showPlayTop(false);
+    }
+  }, {passive:true});
+  playBody.addEventListener('touchmove', (e)=>{
+    if(window.innerWidth > 760 || touchStartY === null) return;
+    const touch = e.changedTouches[0];
+    const dx = touch.clientX - touchStartX;
+    const dy = touch.clientY - touchStartY;
+    if(touchStartY <= 38 && dy > 18 && Math.abs(dx) < 55){
+      showPlayTop(false);
+    }
+  }, {passive:true});
   playBody.addEventListener('touchend', (e)=>{
     if(touchStartX === null) return;
     const dx = e.changedTouches[0].clientX - touchStartX;
     if(Math.abs(dx) > 55){ dx < 0 ? nextSong() : prevSong(); }
     touchStartX = null;
+    touchStartY = null;
   }, {passive:true});
 
   document.getElementById('font-plus').addEventListener('click', ()=>{

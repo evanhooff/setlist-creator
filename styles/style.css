@@ -179,6 +179,16 @@
   .play-top .name{font-size:12px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .play-top .counter{font-family:var(--font-mono);font-size:12px;color:var(--amber);}
   .play-body{flex:1;display:flex;position:relative;overflow:hidden;}
+  @media (max-width:760px){
+    .play-bottom{display:none;}
+    .play-top{
+      max-height:0; padding:0 16px; border-bottom:none; opacity:0; overflow:hidden;
+      transition:max-height .2s ease, padding .2s ease, border-color .2s ease, opacity .2s ease;
+    }
+    .play-top.visible{
+      max-height:80px; padding:14px 16px; border-bottom:1px solid var(--border-solid); opacity:1;
+    }
+  }
   .play-tapzone{position:absolute;top:0;bottom:0;width:16%;z-index:2;}
   .play-tapzone.left{left:0;}
   .play-tapzone.right{right:0;}
