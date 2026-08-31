@@ -633,7 +633,7 @@
   }
   function showPlayTop(autoHide = true){
     const { playTop: activePlayTop } = getPlayElements();
-    if(!activePlayTop || !window.matchMedia('(max-width: 760px)').matches) return;
+    if(!activePlayTop) return;
     activePlayTop.classList.add('visible');
     if(!autoHide) return;
     clearTimeout(playTopHideTimer);
