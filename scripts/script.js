@@ -717,6 +717,10 @@
     if(e.key === 'Escape') setPlayViewOpen(false);
   });
   // swipe
+  function isTouchDevice(){
+    return window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+  }
+
   let touchStartX = null;
   let touchStartY = null;
   function setupPlayBodySwipe(){
@@ -724,19 +728,20 @@
     if(!activePlayBody || activePlayBody.dataset.swipeBound === 'true') return;
     activePlayBody.dataset.swipeBound = 'true';
     activePlayBody.addEventListener('touchstart', (e)=>{
+      if (!isTouchDevice()) return;
       const touch = e.changedTouches[0];
       touchStartX = touch.clientX;
       touchStartY = touch.clientY;
-      if(window.innerWidth <= 760 && touchStartY <= 38){
+      if (touchStartY <= 38) {
         showPlayTop(false);
       }
     }, {passive:true});
     activePlayBody.addEventListener('touchmove', (e)=>{
-      if(window.innerWidth > 760 || touchStartY === null) return;
+      if (!isTouchDevice() || touchStartY === null) return;
       const touch = e.changedTouches[0];
       const dx = touch.clientX - touchStartX;
       const dy = touch.clientY - touchStartY;
-      if(touchStartY <= 38 && dy > 18 && Math.abs(dx) < 55){
+      if (touchStartY <= 38 && dy > 18 && Math.abs(dx) < 55) {
         showPlayTop(false);
       }
     }, {passive:true});
