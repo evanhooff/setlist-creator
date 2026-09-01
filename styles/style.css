@@ -138,7 +138,7 @@
   .build-header select{min-width:220px;}
   .build-header input{flex:1;min-width:200px;}
   .build-columns{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
-  @media (max-width:760px), (max-height:760px) and (orientation: landscape){
+  @media (pointer: coarse) and (orientation: landscape){
     .build-columns{grid-template-columns:1fr;}
   }
   .col-label{font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-dim);font-weight:700;margin-bottom:8px;display:flex;justify-content:space-between;}
@@ -200,7 +200,7 @@
     font-size:var(--play-fs, 18px);line-height:1.55;color:var(--text);
     width:100%;max-width:900px;margin:0 auto;
   }
-  @media (max-width:760px), (max-height:760px) and (orientation: landscape){
+  @media (orientation: landscape) and (pointer: coarse){
     .play-bottom{
       display:none; opacity:0; transform:translateY(8px);
       transition:opacity .2s ease, transform .2s ease;
