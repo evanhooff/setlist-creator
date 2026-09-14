@@ -665,7 +665,7 @@
     clearTimeout(playTopHideTimer);
     playTopHideTimer = setTimeout(()=>{
       activePlayTop.classList.remove('visible');
-    }, 1000);
+    }, 3000);
   }
   function hidePlayTop(){
     const { playTop: activePlayTop } = getPlayElements();
@@ -681,13 +681,17 @@
     clearTimeout(playBottomHideTimer);
     playBottomHideTimer = setTimeout(()=>{
       activePlayBottom.classList.remove('visible');
-    }, 1000);
+    }, 3000);
   }
   function hidePlayBottom(){
     const { playBottom: activePlayBottom } = getPlayElements();
     if(!activePlayBottom) return;
     clearTimeout(playBottomHideTimer);
     activePlayBottom.classList.remove('visible');
+  }
+  function showPlayControls(){
+    showPlayTop(true);
+    showPlayBottom(true);
   }
 
   document.getElementById('play-btn').addEventListener('click', openPlay);
@@ -701,8 +705,7 @@
     if(activePlayView) activePlayView.classList.add('open');
     renderPlaySong();
     renderDots();
-    showPlayTop(true);
-    showPlayBottom(true);
+    showPlayControls();
   }
   document.getElementById('play-close').addEventListener('click', ()=>{
     setPlayViewOpen(false);
@@ -742,35 +745,25 @@
   }
 
   let touchStartX = null;
-  let touchStartY = null;
   function setupPlayBodySwipe(){
-    const { playBody: activePlayBody } = getPlayElements();
+    const { playBody: activePlayBody, playView: activePlayView } = getPlayElements();
     if(!activePlayBody || activePlayBody.dataset.swipeBound === 'true') return;
     activePlayBody.dataset.swipeBound = 'true';
+    if (activePlayView) {
+      activePlayView.addEventListener('touchstart', ()=>{
+        if (isTouchDevice()) showPlayControls();
+      }, {passive:true});
+    }
     activePlayBody.addEventListener('touchstart', (e)=>{
       if (!isTouchDevice()) return;
       const touch = e.changedTouches[0];
       touchStartX = touch.clientX;
-      touchStartY = touch.clientY;
-      if (touchStartY <= 38) {
-        showPlayTop(false);
-      }
-    }, {passive:true});
-    activePlayBody.addEventListener('touchmove', (e)=>{
-      if (!isTouchDevice() || touchStartY === null) return;
-      const touch = e.changedTouches[0];
-      const dx = touch.clientX - touchStartX;
-      const dy = touch.clientY - touchStartY;
-      if (touchStartY <= 38 && dy > 18 && Math.abs(dx) < 55) {
-        showPlayTop(false);
-      }
     }, {passive:true});
     activePlayBody.addEventListener('touchend', (e)=>{
       if(touchStartX === null) return;
       const dx = e.changedTouches[0].clientX - touchStartX;
       if(Math.abs(dx) > 55){ dx < 0 ? nextSong() : prevSong(); }
       touchStartX = null;
-      touchStartY = null;
     }, {passive:true});
   }
   setupPlayBodySwipe();
