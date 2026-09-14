@@ -681,7 +681,7 @@
     clearTimeout(playBottomHideTimer);
     playBottomHideTimer = setTimeout(()=>{
       activePlayBottom.classList.remove('visible');
-    }, 3000);
+    }, 2000);
   }
   function hidePlayBottom(){
     const { playBottom: activePlayBottom } = getPlayElements();
