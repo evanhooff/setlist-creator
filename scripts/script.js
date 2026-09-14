@@ -279,6 +279,26 @@
     if(!ok) showToast('Could not save — try again');
   }
 
+  async function deleteRemoteRecord(table, id, storageKey, value){
+    if (await waitForSupabaseConfig()) {
+      try{
+        const client = getSupabaseClient();
+        const { error } = await client.from(table).delete().eq('id', id);
+        if (error) throw error;
+        setStorageStatus('Supabase connected', 'connected');
+        return;
+      }catch (error){
+        console.error('Supabase delete failed:', error);
+        setStorageStatus('Supabase unavailable', 'error');
+        showToast('Could not delete from Supabase — check table/RLS');
+      }
+    }
+
+    setStorageStatus('Local fallback active', 'fallback');
+    const ok = writeStorage(storageKey, value);
+    if(!ok) showToast('Could not save — try again');
+  }
+
   /* ---------------- Tabs ---------------- */
   document.querySelectorAll('.tab').forEach(tab=>{
     tab.addEventListener('click', ()=>{
@@ -328,7 +348,7 @@
       const song = songs.find(s=>s.id===id);
       showConfirm('Delete song?', '"' + song.title + '" will be removed from your library (it stays in any setlists that already used it, shown as its old title).', async ()=>{
         songs = songs.filter(s=>s.id!==id);
-        await saveSongs();
+        await deleteRemoteRecord('songs', id, STORAGE_KEYS.songs, songs);
         renderSongGrid(); renderBuildLibraryList();
         showToast('Song deleted');
       });
@@ -458,7 +478,7 @@
     const s = setlists.find(s=>s.id===draft.id);
     showConfirm('Delete setlist?', '"'+s.name+'" will be permanently removed.', async ()=>{
       setlists = setlists.filter(s=>s.id!==draft.id);
-      await saveSetlists();
+      await deleteRemoteRecord('setlists', draft.id, STORAGE_KEYS.setlists, setlists);
       newDraft();
       renderSetlistSelect();
       showToast('Setlist deleted');
