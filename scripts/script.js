@@ -665,7 +665,7 @@
     clearTimeout(playTopHideTimer);
     playTopHideTimer = setTimeout(()=>{
       activePlayTop.classList.remove('visible');
-    }, 3000);
+    }, 2000);
   }
   function hidePlayTop(){
     const { playTop: activePlayTop } = getPlayElements();
