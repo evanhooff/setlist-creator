@@ -71,6 +71,10 @@
         <input type="text" id="song-title-input" placeholder="Song title">
       </div>
       <div class="field" style="flex:1;">
+        <label for="song-key-input">Key (optional)</label>
+        <input type="text" id="song-key-input" placeholder="e.g. G, F#m">
+      </div>
+      <div class="field" style="flex:1;">
         <label for="song-sound-input">Sound (optional)</label>
         <input type="text" id="song-sound-input" placeholder="e.g. acoustic, electric">
       </div>
@@ -176,7 +180,10 @@ Sound: electric
     <div class="play-tapzone left" id="tap-left"></div>
     <div class="play-content" id="play-content">
       <div class="play-heading-row">
-        <div class="play-title" id="play-title"></div>
+        <div class="play-title-group">
+          <div class="play-title" id="play-title"></div>
+          <div class="play-title-key" id="play-title-key"></div>
+        </div>
         <div class="play-sound-editor" id="play-sound-editor">
           <div class="play-sound" id="play-sound"></div>
           <button class="icon-btn" id="play-sound-edit" type="button" title="Edit sound">✎</button>

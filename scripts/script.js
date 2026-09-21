@@ -2,7 +2,7 @@
   "use strict";
 
   /* ---------------- State ---------------- */
-  let songs = [];       // {id, title, sound, content}
+  let songs = [];       // {id, title, key, sound, content}
   let setlists = [];    // {id, name, date, entries:[{entryId, songId}]}
   let draft = null;     // in-progress setlist being edited: {id, name, entries:[]}
   let editingSongId = null;
@@ -188,6 +188,7 @@
         songs = (songsResponse.data || []).map(song => ({
           id: song.id,
           title: song.title,
+          key: song.key || '',
           sound: song.sound || '',
           content: song.content || ''
         }));
@@ -228,6 +229,7 @@
         const payload = songs.map(song => ({
           id: song.id,
           title: song.title,
+          key: song.key || '',
           sound: song.sound || '',
           content: song.content || ''
         }));
@@ -382,6 +384,7 @@
     editingSongId = song ? song.id : null;
     document.getElementById('song-modal-title').textContent = song ? 'Edit song' : 'Add song';
     document.getElementById('song-title-input').value = song ? song.title : '';
+    document.getElementById('song-key-input').value = song ? (song.key||'') : '';
     document.getElementById('song-sound-input').value = song ? (song.sound||'') : '';
     document.getElementById('song-content-input').value = song ? song.content : '';
     document.getElementById('song-modal-overlay').classList.add('open');
@@ -397,15 +400,16 @@
   document.getElementById('song-modal-save').addEventListener('click', async ()=>{
     if (!requireAuthForWrite()) return;
     const title = document.getElementById('song-title-input').value.trim();
+    const key = document.getElementById('song-key-input').value.trim();
     const sound = document.getElementById('song-sound-input').value.trim();
     const content = document.getElementById('song-content-input').value;
     if(!title){ showToast('Give the song a title'); return; }
     if(!content.trim()){ showToast('Paste in the chords / text'); return; }
     if(editingSongId){
       const s = songs.find(s=>s.id===editingSongId);
-      s.title = title; s.sound = sound; s.content = content;
+      s.title = title; s.key = key; s.sound = sound; s.content = content;
     }else{
-      songs.push({id:uid(), title, sound, content});
+      songs.push({id:uid(), title, key, sound, content});
     }
     await saveSongs();
     document.getElementById('song-modal-overlay').classList.remove('open');
@@ -736,6 +740,7 @@
     const s = playSongs[playIndex];
     closePlaySoundEditor();
     document.getElementById('play-title').textContent = s.title;
+    document.getElementById('play-title-key').textContent = s.key ? ' - ' + s.key : '';
     document.getElementById('play-sound').textContent = s.sound || '';
     document.getElementById('play-chords').textContent = s.content;
     document.getElementById('play-counter').textContent = (playIndex+1) + ' / ' + playSongs.length;
