@@ -200,11 +200,17 @@
     font-size:clamp(26px,6vw,50px);letter-spacing:1px;line-height:1.05;margin-bottom:6px;
     min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
   }
-  .play-title-key{color:#b7b3ba;font-size:13px;line-height:1.2;white-space:nowrap;flex-shrink:0;margin-bottom:16px;}
+  .play-title-key{
+    font-family:var(--font-display);font-size:clamp(26px,6vw,50px);font-weight:400;
+    color:#b7b3ba;line-height:1.05;white-space:nowrap;flex-shrink:0;margin-bottom:6px;
+  }
   .play-sound-editor, .play-sound-form{display:flex;align-items:center;gap:2px;flex-shrink:0;}
   .play-sound-editor[hidden], .play-sound-form[hidden]{display:none;}
-  .play-sound{font-size:13px;color:var(--text-dim);margin-bottom:16px;text-align:right;}
-  .play-sound-editor .play-sound{margin-bottom:16px;}
+  .play-sound{
+    font-family:var(--font-display);font-size:clamp(26px,6vw,50px);font-weight:300;
+    color:var(--text-dim);line-height:1.05;margin-bottom:6px;text-align:right;
+  }
+  .play-sound-editor .play-sound{margin-bottom:6px;}
   .play-sound-form input{width:130px;padding:7px 9px;font-size:13px;}
   .play-sound-form .icon-btn{color:var(--teal);font-size:18px;}
   .play-chords{
