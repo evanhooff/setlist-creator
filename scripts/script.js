@@ -2,7 +2,7 @@
   "use strict";
 
   /* ---------------- State ---------------- */
-  let songs = [];       // {id, title, key, content}
+  let songs = [];       // {id, title, sound, content}
   let setlists = [];    // {id, name, date, entries:[{entryId, songId}]}
   let draft = null;     // in-progress setlist being edited: {id, name, entries:[]}
   let editingSongId = null;
@@ -188,7 +188,7 @@
         songs = (songsResponse.data || []).map(song => ({
           id: song.id,
           title: song.title,
-          key: song.key || '',
+          sound: song.sound || '',
           content: song.content || ''
         }));
 
@@ -228,7 +228,7 @@
         const payload = songs.map(song => ({
           id: song.id,
           title: song.title,
-          key: song.key || '',
+          sound: song.sound || '',
           content: song.content || ''
         }));
 
@@ -246,28 +246,28 @@
     }
 
     setStorageStatus('Local fallback active', 'fallback');
-    const ok = writeStorage(STORAGE_KEYS.songs, songs.map(item => item.id === song.id ? {...item, key} : item));
+    const ok = writeStorage(STORAGE_KEYS.songs, songs);
     if(!ok) showToast('Could not save — try again');
   }
 
-  async function updateSongKey(song, key){
+  async function updateSongSound(song, sound){
     if (await waitForSupabaseConfig()) {
       try{
         const client = getSupabaseClient();
-        const { error } = await client.from('songs').update({ key }).eq('id', song.id);
+        const { error } = await client.from('songs').update({ sound }).eq('id', song.id);
         if (error) throw error;
         setStorageStatus('Supabase connected', 'connected');
         return true;
       }catch (error){
-        console.error('Supabase key update failed:', error);
+        console.error('Supabase sound update failed:', error);
         setStorageStatus('Supabase unavailable', 'error');
-        showToast('Could not save to Supabase — check table/RLS');
+        showToast('Could not save sound to Supabase — check table/RLS');
         return false;
       }
     }
 
     setStorageStatus('Local fallback active', 'fallback');
-    const ok = writeStorage(STORAGE_KEYS.songs, songs);
+    const ok = writeStorage(STORAGE_KEYS.songs, songs.map(item => item.id === song.id ? {...item, sound} : item));
     if(!ok) showToast('Could not save — try again');
     return ok;
   }
@@ -349,7 +349,7 @@
       const excerpt = (s.content||'').split('\n').find(l=>l.trim().length) || '';
       return '<div class="song-card" data-id="'+s.id+'">'
         + '<div class="title">'+escapeHtml(s.title)+'</div>'
-        + (s.key ? '<div class="meta"><span class="badge">'+escapeHtml(s.key)+'</span></div>' : '')
+        + (s.sound ? '<div class="meta"><span class="badge">'+escapeHtml(s.sound)+'</span></div>' : '')
         + '<div class="excerpt">'+escapeHtml(excerpt)+'</div>'
         + '<div class="row"><span></span><div class="actions">'
         + '<button class="icon-btn edit-song" title="Edit">✎</button>'
@@ -382,7 +382,7 @@
     editingSongId = song ? song.id : null;
     document.getElementById('song-modal-title').textContent = song ? 'Edit song' : 'Add song';
     document.getElementById('song-title-input').value = song ? song.title : '';
-    document.getElementById('song-key-input').value = song ? (song.key||'') : '';
+    document.getElementById('song-sound-input').value = song ? (song.sound||'') : '';
     document.getElementById('song-content-input').value = song ? song.content : '';
     document.getElementById('song-modal-overlay').classList.add('open');
     setTimeout(()=>document.getElementById('song-title-input').focus(), 50);
@@ -397,15 +397,15 @@
   document.getElementById('song-modal-save').addEventListener('click', async ()=>{
     if (!requireAuthForWrite()) return;
     const title = document.getElementById('song-title-input').value.trim();
-    const key = document.getElementById('song-key-input').value.trim();
+    const sound = document.getElementById('song-sound-input').value.trim();
     const content = document.getElementById('song-content-input').value;
     if(!title){ showToast('Give the song a title'); return; }
     if(!content.trim()){ showToast('Paste in the chords / text'); return; }
     if(editingSongId){
       const s = songs.find(s=>s.id===editingSongId);
-      s.title = title; s.key = key; s.content = content;
+      s.title = title; s.sound = sound; s.content = content;
     }else{
-      songs.push({id:uid(), title, key, content});
+      songs.push({id:uid(), title, sound, content});
     }
     await saveSongs();
     document.getElementById('song-modal-overlay').classList.remove('open');
@@ -432,12 +432,12 @@
       if(lines.length === 0) return;
       const title = lines.shift().trim();
       if(!title) return;
-      let key = '';
-      if(lines.length && /^key:/i.test(lines[0].trim())){
-        key = lines.shift().replace(/^key:/i,'').trim();
+      let sound = '';
+      if(lines.length && /^sound:/i.test(lines[0].trim())){
+        sound = lines.shift().replace(/^sound:/i,'').trim();
       }
       const content = lines.join('\n').trim();
-      if(content) result.push({title, key, content});
+      if(content) result.push({title, sound, content});
     });
     return result;
   }
@@ -449,7 +449,7 @@
     if (!requireAuthForWrite()) return;
     const found = parseBulkImport(document.getElementById('bulk-textarea').value);
     if(found.length === 0){ showToast('No songs recognised — check the format'); return; }
-    found.forEach(f=> songs.push({id:uid(), title:f.title, key:f.key, content:f.content}));
+    found.forEach(f=> songs.push({id:uid(), title:f.title, sound:f.sound, content:f.content}));
     await saveSongs();
     document.getElementById('bulk-modal-overlay').classList.remove('open');
     renderSongGrid(); renderBuildLibraryList();
@@ -518,7 +518,7 @@
     wrap.innerHTML = list.map(s=>
       '<div class="pick-row" data-id="'+s.id+'">'
       + '<span class="title">'+escapeHtml(s.title)+'</span>'
-      + (s.key ? '<span class="badge">'+escapeHtml(s.key)+'</span>' : '')
+      + (s.sound ? '<span class="badge">'+escapeHtml(s.sound)+'</span>' : '')
       + '<button class="icon-btn" title="Add to setlist">+</button>'
       + '</div>'
     ).join('');
@@ -544,11 +544,11 @@
     wrap.innerHTML = draft.entries.map((en, i)=>{
       const song = songs.find(s=>s.id===en.songId);
       const title = song ? song.title : '(deleted song)';
-      const key = song && song.key ? '<span class="badge">'+escapeHtml(song.key)+'</span>' : '';
+      const sound = song && song.sound ? '<span class="badge">'+escapeHtml(song.sound)+'</span>' : '';
       return '<div class="order-row" draggable="true" data-entry="'+en.entryId+'" data-index="'+i+'">'
         + '<span class="order-num">'+(i+1)+'</span>'
         + '<span class="title">'+escapeHtml(title)+'</span>'
-        + key
+        + sound
         + '<div class="order-controls">'
         + '<button class="icon-btn move-up" title="Move up">▲</button>'
         + '<button class="icon-btn move-down" title="Move down">▼</button>'
@@ -641,13 +641,13 @@
       + '<div class="print-title">'+escapeHtml(name)+'</div>'
       + '<div class="print-sub">'+dateStr+' — '+list.length+' songs</div>'
       + '<ol class="print-list">'
-      + list.map(s=>'<li><span>'+escapeHtml(s.title)+'</span>'+(s.key?'<span class="k">'+escapeHtml(s.key)+'</span>':'')+'</li>').join('')
+      + list.map(s=>'<li><span>'+escapeHtml(s.title)+'</span>'+(s.sound?'<span class="sound">'+escapeHtml(s.sound)+'</span>':'')+'</li>').join('')
       + '</ol></div>';
     if(includeChords){
       list.forEach(s=>{
         html += '<div class="print-page">'
           + '<div class="song-page-title">'+escapeHtml(s.title)+'</div>'
-          + (s.key ? '<div class="song-page-key">'+escapeHtml(s.key)+'</div>' : '')
+          + (s.sound ? '<div class="song-page-sound">'+escapeHtml(s.sound)+'</div>' : '')
           + '<hr class="song-page-hr">'
           + '<div class="song-page-content">'+escapeHtml(s.content)+'</div>'
           + '</div>';
@@ -734,9 +734,9 @@
   });
   function renderPlaySong(){
     const s = playSongs[playIndex];
-    closePlayKeyEditor();
+    closePlaySoundEditor();
     document.getElementById('play-title').textContent = s.title;
-    document.getElementById('play-key').textContent = s.key || '';
+    document.getElementById('play-sound').textContent = s.sound || '';
     document.getElementById('play-chords').textContent = s.content;
     document.getElementById('play-counter').textContent = (playIndex+1) + ' / ' + playSongs.length;
     document.getElementById('play-content').scrollTop = 0;
@@ -756,37 +756,37 @@
   document.getElementById('tap-left').addEventListener('click', prevSong);
   document.getElementById('tap-right').addEventListener('click', nextSong);
 
-  function closePlayKeyEditor(){
-    document.getElementById('play-key-editor').hidden = false;
-    document.getElementById('play-key-form').hidden = true;
-    document.getElementById('play-key-input').value = '';
+  function closePlaySoundEditor(){
+    document.getElementById('play-sound-editor').hidden = false;
+    document.getElementById('play-sound-form').hidden = true;
+    document.getElementById('play-sound-input').value = '';
   }
-  document.getElementById('play-key-edit').addEventListener('click', ()=>{
+  document.getElementById('play-sound-edit').addEventListener('click', ()=>{
     if (!requireAuthForWrite()) return;
-    const input = document.getElementById('play-key-input');
-    input.value = playSongs[playIndex].key || '';
-    document.getElementById('play-key-editor').hidden = true;
-    document.getElementById('play-key-form').hidden = false;
+    const input = document.getElementById('play-sound-input');
+    input.value = playSongs[playIndex].sound || '';
+    document.getElementById('play-sound-editor').hidden = true;
+    document.getElementById('play-sound-form').hidden = false;
     setTimeout(()=>input.focus(), 0);
   });
-  document.getElementById('play-key-save').addEventListener('click', async ()=>{
+  document.getElementById('play-sound-save').addEventListener('click', async ()=>{
     if (!requireAuthForWrite()) return;
     const song = playSongs[playIndex];
-    const key = document.getElementById('play-key-input').value.trim();
-    const saveButton = document.getElementById('play-key-save');
+    const sound = document.getElementById('play-sound-input').value.trim();
+    const saveButton = document.getElementById('play-sound-save');
     saveButton.disabled = true;
-    const saved = await updateSongKey(song, key);
+    const saved = await updateSongSound(song, sound);
     saveButton.disabled = false;
     if (!saved) return;
-    song.key = key;
+    song.sound = sound;
     renderSongGrid();
     renderBuildLibraryList();
     renderPlaySong();
     showToast('Sound saved');
   });
-  document.getElementById('play-key-input').addEventListener('keydown', (e)=>{
-    if (e.key === 'Enter') document.getElementById('play-key-save').click();
-    if (e.key === 'Escape') closePlayKeyEditor();
+  document.getElementById('play-sound-input').addEventListener('keydown', (e)=>{
+    if (e.key === 'Enter') document.getElementById('play-sound-save').click();
+    if (e.key === 'Escape') closePlaySoundEditor();
   });
   document.addEventListener('keydown', (e)=>{
     const { playView: activePlayView } = getPlayElements();

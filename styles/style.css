@@ -199,12 +199,12 @@
     font-size:clamp(26px,6vw,50px);letter-spacing:1px;line-height:1.05;margin-bottom:6px;
     min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
   }
-  .play-key-editor, .play-key-form{display:flex;align-items:center;gap:2px;flex-shrink:0;}
-  .play-key-editor[hidden], .play-key-form[hidden]{display:none;}
-  .play-key{font-size:13px;color:var(--text-dim);margin-bottom:16px;text-align:right;}
-  .play-key-editor .play-key{margin-bottom:16px;}
-  .play-key-form input{width:130px;padding:7px 9px;font-size:13px;}
-  .play-key-form .icon-btn{color:var(--teal);font-size:18px;}
+  .play-sound-editor, .play-sound-form{display:flex;align-items:center;gap:2px;flex-shrink:0;}
+  .play-sound-editor[hidden], .play-sound-form[hidden]{display:none;}
+  .play-sound{font-size:13px;color:var(--text-dim);margin-bottom:16px;text-align:right;}
+  .play-sound-editor .play-sound{margin-bottom:16px;}
+  .play-sound-form input{width:130px;padding:7px 9px;font-size:13px;}
+  .play-sound-form .icon-btn{color:var(--teal);font-size:18px;}
   .play-chords{
     font-family:var(--font-mono);white-space:pre;text-align:left;
     font-size:var(--play-fs, 18px);line-height:1.55;color:var(--text);
@@ -267,9 +267,9 @@
       padding:6px 0;border-bottom:1px solid #ddd;display:flex;gap:14px;align-items:baseline;
     }
     .print-list li::before{content:counter(song);font-family:var(--font-display);color:#b9781f;font-size:22px;width:34px;text-align:right;}
-    .print-list li .k{font-size:14px;color:#777;font-weight:500;}
+    .print-list li .sound{font-size:14px;color:#777;font-weight:500;}
     .song-page-title{font-family:var(--font-display);font-size:32px;margin:0;}
-    .song-page-key{font-size:13px;color:#666;margin-bottom:4mm;}
+    .song-page-sound{font-size:13px;color:#666;margin-bottom:4mm;}
     .song-page-hr{border:none;border-top:1px solid #ccc;margin:0 0 4mm;}
     .song-page-content{font-family:var(--font-mono);white-space:pre-wrap;font-size:15px;line-height:1.45;}
   }
