@@ -246,8 +246,30 @@
     }
 
     setStorageStatus('Local fallback active', 'fallback');
+    const ok = writeStorage(STORAGE_KEYS.songs, songs.map(item => item.id === song.id ? {...item, key} : item));
+    if(!ok) showToast('Could not save — try again');
+  }
+
+  async function updateSongKey(song, key){
+    if (await waitForSupabaseConfig()) {
+      try{
+        const client = getSupabaseClient();
+        const { error } = await client.from('songs').update({ key }).eq('id', song.id);
+        if (error) throw error;
+        setStorageStatus('Supabase connected', 'connected');
+        return true;
+      }catch (error){
+        console.error('Supabase key update failed:', error);
+        setStorageStatus('Supabase unavailable', 'error');
+        showToast('Could not save to Supabase — check table/RLS');
+        return false;
+      }
+    }
+
+    setStorageStatus('Local fallback active', 'fallback');
     const ok = writeStorage(STORAGE_KEYS.songs, songs);
     if(!ok) showToast('Could not save — try again');
+    return ok;
   }
 
   async function saveSetlists(){
@@ -712,6 +734,7 @@
   });
   function renderPlaySong(){
     const s = playSongs[playIndex];
+    closePlayKeyEditor();
     document.getElementById('play-title').textContent = s.title;
     document.getElementById('play-key').textContent = s.key || '';
     document.getElementById('play-chords').textContent = s.content;
@@ -732,6 +755,38 @@
   document.getElementById('play-prev').addEventListener('click', prevSong);
   document.getElementById('tap-left').addEventListener('click', prevSong);
   document.getElementById('tap-right').addEventListener('click', nextSong);
+
+  function closePlayKeyEditor(){
+    document.getElementById('play-key-editor').hidden = false;
+    document.getElementById('play-key-form').hidden = true;
+  }
+  document.getElementById('play-key-edit').addEventListener('click', ()=>{
+    if (!requireAuthForWrite()) return;
+    const input = document.getElementById('play-key-input');
+    input.value = playSongs[playIndex].key || '';
+    document.getElementById('play-key-editor').hidden = true;
+    document.getElementById('play-key-form').hidden = false;
+    setTimeout(()=>input.focus(), 0);
+  });
+  document.getElementById('play-key-save').addEventListener('click', async ()=>{
+    if (!requireAuthForWrite()) return;
+    const song = playSongs[playIndex];
+    const key = document.getElementById('play-key-input').value.trim();
+    const saveButton = document.getElementById('play-key-save');
+    saveButton.disabled = true;
+    const saved = await updateSongKey(song, key);
+    saveButton.disabled = false;
+    if (!saved) return;
+    song.key = key;
+    renderSongGrid();
+    renderBuildLibraryList();
+    renderPlaySong();
+    showToast('Key / capo saved');
+  });
+  document.getElementById('play-key-input').addEventListener('keydown', (e)=>{
+    if (e.key === 'Enter') document.getElementById('play-key-save').click();
+    if (e.key === 'Escape') closePlayKeyEditor();
+  });
   document.addEventListener('keydown', (e)=>{
     const { playView: activePlayView } = getPlayElements();
     if(!activePlayView || !activePlayView.classList.contains('open')) return;

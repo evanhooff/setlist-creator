@@ -177,7 +177,14 @@ Key: Bm
     <div class="play-content" id="play-content">
       <div class="play-heading-row">
         <div class="play-title" id="play-title"></div>
-        <div class="play-key" id="play-key"></div>
+        <div class="play-key-editor" id="play-key-editor">
+          <div class="play-key" id="play-key"></div>
+          <button class="icon-btn" id="play-key-edit" type="button" title="Edit key or capo">✎</button>
+        </div>
+        <div class="play-key-form" id="play-key-form" hidden>
+          <input type="text" id="play-key-input" aria-label="Key or capo" placeholder="Key / capo">
+          <button class="icon-btn" id="play-key-save" type="button" title="Save key or capo">✓</button>
+        </div>
       </div>
       <pre class="play-chords" id="play-chords"></pre>
     </div>
