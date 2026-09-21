@@ -736,6 +736,12 @@
   document.getElementById('play-close').addEventListener('click', ()=>{
     setPlayViewOpen(false);
   });
+  document.getElementById('play-song-edit').addEventListener('click', ()=>{
+    if (!requireAuthForWrite()) return;
+    const song = playSongs[playIndex];
+    setPlayViewOpen(false);
+    openSongModal(song);
+  });
   function renderPlaySong(){
     const s = playSongs[playIndex];
     closePlaySoundEditor();
