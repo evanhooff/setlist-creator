@@ -9,6 +9,8 @@
   let playSongs = [];   // resolved song objects for the active play session
   let playIndex = 0;
   let playFontSize = 18;
+  let returnToPlayAfterSongSave = false;
+  let returnToPlayIndex = 0;
   let confirmCallback = null;
 
   /* ---------------- Utilities ---------------- */
@@ -395,7 +397,11 @@
     openSongModal(null);
   });
   document.getElementById('song-modal-cancel').addEventListener('click', ()=>{
+    const shouldReturnToPlay = returnToPlayAfterSongSave;
+    const index = returnToPlayIndex;
+    returnToPlayAfterSongSave = false;
     document.getElementById('song-modal-overlay').classList.remove('open');
+    if (shouldReturnToPlay) openPlay(index);
   });
   document.getElementById('song-modal-save').addEventListener('click', async ()=>{
     if (!requireAuthForWrite()) return;
@@ -414,6 +420,11 @@
     await saveSongs();
     document.getElementById('song-modal-overlay').classList.remove('open');
     renderSongGrid(); renderBuildLibraryList();
+    if (returnToPlayAfterSongSave) {
+      const index = returnToPlayIndex;
+      returnToPlayAfterSongSave = false;
+      openPlay(index);
+    }
     showToast('Saved');
   });
 
@@ -675,6 +686,7 @@
     return { playTop, playBottom, playBody, playView };
   }
   function setPlayViewOpen(isOpen){
+    if(!isOpen) playIndex = 0;
     const { playView: activePlayView } = getPlayElements();
     if(!activePlayView) return;
     activePlayView.classList.toggle('open', isOpen);
@@ -721,11 +733,11 @@
   }
 
   document.getElementById('play-btn').addEventListener('click', openPlay);
-  function openPlay(){
+  function openPlay(startIndex = 0){
     if(!draft || draft.entries.length === 0){ showToast('Build a setlist first'); return; }
     playSongs = draft.entries.map(en=>songs.find(s=>s.id===en.songId)).filter(Boolean);
     if(playSongs.length === 0){ showToast('No valid songs in this setlist'); return; }
-    playIndex = 0;
+    playIndex = Math.min(Math.max(startIndex, 0), playSongs.length - 1);
     const { playView: activePlayView } = getPlayElements();
     document.getElementById('play-setlist-name').textContent = draft.name || 'Setlist';
     if(activePlayView) activePlayView.classList.add('open');
@@ -739,6 +751,8 @@
   document.getElementById('play-song-edit').addEventListener('click', ()=>{
     if (!requireAuthForWrite()) return;
     const song = playSongs[playIndex];
+    returnToPlayAfterSongSave = true;
+    returnToPlayIndex = playIndex;
     setPlayViewOpen(false);
     openSongModal(song);
   });
