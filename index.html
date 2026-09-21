@@ -71,8 +71,12 @@
         <input type="text" id="song-title-input" placeholder="Song title">
       </div>
       <div class="field" style="flex:1;">
-        <label for="song-key-input">Key / capo (optional)</label>
-        <input type="text" id="song-key-input" placeholder="e.g. G, capo 2">
+        <label for="song-key-input">Key (optional)</label>
+        <input type="text" id="song-key-input" placeholder="e.g. G, F#m">
+      </div>
+      <div class="field" style="flex:1;">
+        <label for="song-sound-input">Sound (optional)</label>
+        <input type="text" id="song-sound-input" placeholder="e.g. acoustic, electric">
       </div>
     </div>
     <div class="field">
@@ -94,15 +98,15 @@
     <div class="field">
       <label>Paste multiple songs at once</label>
       <textarea id="bulk-textarea" style="min-height:260px;" placeholder="Wonderwall
-Key: F#m
+Sound: acoustic
 [chords/lyrics...]
 
 ---
 
 Hotel California
-Key: Bm
+Sound: electric
 [chords/lyrics...]"></textarea>
-      <div class="hint">Separate songs with a line containing just <code>---</code>. First line of each block is the title. An optional second line like <code>Key: G</code> is picked up automatically.</div>
+      <div class="hint">Separate songs with a line containing just <code>---</code>. First line of each block is the title. An optional second line like <code>Sound: acoustic</code> is picked up automatically.</div>
     </div>
     <div class="modal-actions">
       <span id="bulk-preview" class="hint" style="margin-right:auto;"></span>
@@ -175,8 +179,20 @@ Key: Bm
   <div class="play-body">
     <div class="play-tapzone left" id="tap-left"></div>
     <div class="play-content" id="play-content">
-      <div class="play-title" id="play-title"></div>
-      <div class="play-key" id="play-key"></div>
+      <div class="play-heading-row">
+        <div class="play-title-group">
+          <div class="play-title" id="play-title"></div>
+          <div class="play-title-key" id="play-title-key"></div>
+        </div>
+        <div class="play-sound-editor" id="play-sound-editor">
+          <div class="play-sound" id="play-sound"></div>
+          <button class="icon-btn" id="play-sound-edit" type="button" title="Edit sound">✎</button>
+        </div>
+        <div class="play-sound-form" id="play-sound-form" hidden>
+          <input type="text" id="play-sound-input" aria-label="Sound" placeholder="Sound">
+          <button class="icon-btn" id="play-sound-save" type="button" title="Save sound">✓</button>
+        </div>
+      </div>
       <pre class="play-chords" id="play-chords"></pre>
     </div>
     <div class="play-tapzone right" id="tap-right"></div>
