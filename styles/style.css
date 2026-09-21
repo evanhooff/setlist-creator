@@ -190,11 +190,16 @@
     flex:1;display:flex;flex-direction:column;align-items:center;
     padding:18px 22px 24px;overflow:auto;text-align:center;
   }
+  .play-heading-row{
+    width:100%;max-width:900px;display:flex;align-items:baseline;
+    justify-content:space-between;gap:18px;text-align:left;
+  }
   .play-title{
     font-family:var(--font-display);color:var(--amber);text-transform:uppercase;
     font-size:clamp(26px,6vw,50px);letter-spacing:1px;line-height:1.05;margin-bottom:6px;
+    min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
   }
-  .play-key{font-size:13px;color:var(--text-dim);margin-bottom:16px;}
+  .play-key{font-size:13px;color:var(--text-dim);margin-bottom:16px;text-align:right;flex-shrink:0;}
   .play-chords{
     font-family:var(--font-mono);white-space:pre;text-align:left;
     font-size:var(--play-fs, 18px);line-height:1.55;color:var(--text);
