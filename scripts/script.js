@@ -759,6 +759,7 @@
   function closePlayKeyEditor(){
     document.getElementById('play-key-editor').hidden = false;
     document.getElementById('play-key-form').hidden = true;
+    document.getElementById('play-key-input').value = '';
   }
   document.getElementById('play-key-edit').addEventListener('click', ()=>{
     if (!requireAuthForWrite()) return;
