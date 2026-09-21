@@ -42,6 +42,11 @@
       <input type="text" id="setlist-name" placeholder="Setlist name — e.g. Aug 14 rehearsal">
       <button class="icon-btn" id="delete-setlist-btn" title="Delete this setlist">🗑</button>
     </div>
+    <div class="build-actions">
+      <button class="btn btn-ghost" id="save-setlist-btn">Save setlist</button>
+      <button class="btn btn-ghost" id="print-btn">Print / PDF</button>
+      <button class="btn btn-accent" id="play-btn">▶ Play on phone</button>
+    </div>
     <div class="build-columns">
       <div>
         <div class="col-label">Song library</div>
@@ -52,11 +57,6 @@
         <div class="col-label">Running order <span id="song-count"></span></div>
         <div id="setlist-order" class="order-list"></div>
       </div>
-    </div>
-    <div class="build-actions">
-      <button class="btn btn-ghost" id="save-setlist-btn">Save setlist</button>
-      <button class="btn btn-ghost" id="print-btn">Print / PDF</button>
-      <button class="btn btn-accent" id="play-btn">▶ Play on phone</button>
     </div>
   </section>
 </div>
@@ -158,7 +158,7 @@ Key: Bm
 
 <!-- PLAY VIEW -->
 <div class="play-view" id="play-view">
-  <div class="play-top">
+  <div class="play-top" id="play-top">
     <button class="icon-btn" id="play-close">✕</button>
     <div class="center">
       <div class="name" id="play-setlist-name"></div>
@@ -181,7 +181,7 @@ Key: Bm
     </div>
     <div class="play-tapzone right" id="tap-right"></div>
   </div>
-  <div class="play-bottom">
+  <div class="play-bottom" id="play-bottom">
     <button class="btn btn-ghost play-nav-btn" id="play-prev">‹ Prev</button>
     <div class="play-dots" id="play-dots"></div>
     <button class="btn btn-accent play-nav-btn" id="play-next">Next ›</button>

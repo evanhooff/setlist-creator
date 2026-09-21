@@ -279,6 +279,26 @@
     if(!ok) showToast('Could not save — try again');
   }
 
+  async function deleteRemoteRecord(table, id, storageKey, value){
+    if (await waitForSupabaseConfig()) {
+      try{
+        const client = getSupabaseClient();
+        const { error } = await client.from(table).delete().eq('id', id);
+        if (error) throw error;
+        setStorageStatus('Supabase connected', 'connected');
+        return;
+      }catch (error){
+        console.error('Supabase delete failed:', error);
+        setStorageStatus('Supabase unavailable', 'error');
+        showToast('Could not delete from Supabase — check table/RLS');
+      }
+    }
+
+    setStorageStatus('Local fallback active', 'fallback');
+    const ok = writeStorage(storageKey, value);
+    if(!ok) showToast('Could not save — try again');
+  }
+
   /* ---------------- Tabs ---------------- */
   document.querySelectorAll('.tab').forEach(tab=>{
     tab.addEventListener('click', ()=>{
@@ -328,7 +348,7 @@
       const song = songs.find(s=>s.id===id);
       showConfirm('Delete song?', '"' + song.title + '" will be removed from your library (it stays in any setlists that already used it, shown as its old title).', async ()=>{
         songs = songs.filter(s=>s.id!==id);
-        await saveSongs();
+        await deleteRemoteRecord('songs', id, STORAGE_KEYS.songs, songs);
         renderSongGrid(); renderBuildLibraryList();
         showToast('Song deleted');
       });
@@ -458,7 +478,7 @@
     const s = setlists.find(s=>s.id===draft.id);
     showConfirm('Delete setlist?', '"'+s.name+'" will be permanently removed.', async ()=>{
       setlists = setlists.filter(s=>s.id!==draft.id);
-      await saveSetlists();
+      await deleteRemoteRecord('setlists', draft.id, STORAGE_KEYS.setlists, setlists);
       newDraft();
       renderSetlistSelect();
       showToast('Setlist deleted');
@@ -615,19 +635,80 @@
   }
 
   /* ---------------- Play view ---------------- */
+  let playTop = null;
+  let playBottom = null;
+  let playBody = null;
+  let playView = null;
+  let playTopHideTimer = null;
+  let playBottomHideTimer = null;
+  function getPlayElements(){
+    if(!playTop) playTop = document.getElementById('play-top');
+    if(!playBottom) playBottom = document.getElementById('play-bottom');
+    if(!playBody) playBody = document.getElementById('play-content');
+    if(!playView) playView = document.getElementById('play-view');
+    return { playTop, playBottom, playBody, playView };
+  }
+  function setPlayViewOpen(isOpen){
+    const { playView: activePlayView } = getPlayElements();
+    if(!activePlayView) return;
+    activePlayView.classList.toggle('open', isOpen);
+    if(!isOpen){
+      hidePlayTop();
+      hidePlayBottom();
+    }
+  }
+  function showPlayTop(autoHide = true){
+    const { playTop: activePlayTop } = getPlayElements();
+    if(!activePlayTop) return;
+    activePlayTop.classList.add('visible');
+    if(!autoHide) return;
+    clearTimeout(playTopHideTimer);
+    playTopHideTimer = setTimeout(()=>{
+      activePlayTop.classList.remove('visible');
+    }, 2000);
+  }
+  function hidePlayTop(){
+    const { playTop: activePlayTop } = getPlayElements();
+    if(!activePlayTop) return;
+    clearTimeout(playTopHideTimer);
+    activePlayTop.classList.remove('visible');
+  }
+  function showPlayBottom(autoHide = true){
+    const { playBottom: activePlayBottom } = getPlayElements();
+    if(!activePlayBottom) return;
+    activePlayBottom.classList.add('visible');
+    if(!autoHide) return;
+    clearTimeout(playBottomHideTimer);
+    playBottomHideTimer = setTimeout(()=>{
+      activePlayBottom.classList.remove('visible');
+    }, 2000);
+  }
+  function hidePlayBottom(){
+    const { playBottom: activePlayBottom } = getPlayElements();
+    if(!activePlayBottom) return;
+    clearTimeout(playBottomHideTimer);
+    activePlayBottom.classList.remove('visible');
+  }
+  function showPlayControls(){
+    showPlayTop(true);
+    showPlayBottom(true);
+  }
+
   document.getElementById('play-btn').addEventListener('click', openPlay);
   function openPlay(){
     if(!draft || draft.entries.length === 0){ showToast('Build a setlist first'); return; }
     playSongs = draft.entries.map(en=>songs.find(s=>s.id===en.songId)).filter(Boolean);
     if(playSongs.length === 0){ showToast('No valid songs in this setlist'); return; }
     playIndex = 0;
+    const { playView: activePlayView } = getPlayElements();
     document.getElementById('play-setlist-name').textContent = draft.name || 'Setlist';
-    document.getElementById('play-view').classList.add('open');
+    if(activePlayView) activePlayView.classList.add('open');
     renderPlaySong();
     renderDots();
+    showPlayControls();
   }
   document.getElementById('play-close').addEventListener('click', ()=>{
-    document.getElementById('play-view').classList.remove('open');
+    setPlayViewOpen(false);
   });
   function renderPlaySong(){
     const s = playSongs[playIndex];
@@ -652,21 +733,40 @@
   document.getElementById('tap-left').addEventListener('click', prevSong);
   document.getElementById('tap-right').addEventListener('click', nextSong);
   document.addEventListener('keydown', (e)=>{
-    if(!document.getElementById('play-view').classList.contains('open')) return;
+    const { playView: activePlayView } = getPlayElements();
+    if(!activePlayView || !activePlayView.classList.contains('open')) return;
     if(e.key === 'ArrowRight') nextSong();
     if(e.key === 'ArrowLeft') prevSong();
-    if(e.key === 'Escape') document.getElementById('play-view').classList.remove('open');
+    if(e.key === 'Escape') setPlayViewOpen(false);
   });
   // swipe
+  function isTouchDevice(){
+    return window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+  }
+
   let touchStartX = null;
-  const playBody = document.getElementById('play-content');
-  playBody.addEventListener('touchstart', (e)=>{ touchStartX = e.changedTouches[0].clientX; }, {passive:true});
-  playBody.addEventListener('touchend', (e)=>{
-    if(touchStartX === null) return;
-    const dx = e.changedTouches[0].clientX - touchStartX;
-    if(Math.abs(dx) > 55){ dx < 0 ? nextSong() : prevSong(); }
-    touchStartX = null;
-  }, {passive:true});
+  function setupPlayBodySwipe(){
+    const { playBody: activePlayBody, playView: activePlayView } = getPlayElements();
+    if(!activePlayBody || activePlayBody.dataset.swipeBound === 'true') return;
+    activePlayBody.dataset.swipeBound = 'true';
+    if (activePlayView) {
+      activePlayView.addEventListener('touchstart', ()=>{
+        if (isTouchDevice()) showPlayControls();
+      }, {passive:true});
+    }
+    activePlayBody.addEventListener('touchstart', (e)=>{
+      if (!isTouchDevice()) return;
+      const touch = e.changedTouches[0];
+      touchStartX = touch.clientX;
+    }, {passive:true});
+    activePlayBody.addEventListener('touchend', (e)=>{
+      if(touchStartX === null) return;
+      const dx = e.changedTouches[0].clientX - touchStartX;
+      if(Math.abs(dx) > 55){ dx < 0 ? nextSong() : prevSong(); }
+      touchStartX = null;
+    }, {passive:true});
+  }
+  setupPlayBodySwipe();
 
   document.getElementById('font-plus').addEventListener('click', ()=>{
     playFontSize = Math.min(playFontSize+2, 32);
