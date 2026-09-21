@@ -782,7 +782,7 @@
     renderSongGrid();
     renderBuildLibraryList();
     renderPlaySong();
-    showToast('Key / capo saved');
+    showToast('Sound saved');
   });
   document.getElementById('play-key-input').addEventListener('keydown', (e)=>{
     if (e.key === 'Enter') document.getElementById('play-key-save').click();
