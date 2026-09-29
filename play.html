@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Setlist Player</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles/style.css">
+</head>
+<body>
+<div class="play-view open" id="play-view">
+  <div class="play-top visible" id="play-top">
+    <button class="icon-btn" id="play-close" type="button" aria-label="Close player">✕</button>
+    <div class="center">
+      <div class="name" id="play-setlist-name"></div>
+      <div class="counter" id="play-counter"></div>
+    </div>
+    <div style="display:flex;gap:2px;">
+      <div class="fontsize-ctrl">
+        <button class="icon-btn" id="font-minus" type="button" title="Smaller text">A-</button>
+        <button class="icon-btn" id="font-plus" type="button" title="Larger text">A+</button>
+      </div>
+      <button class="icon-btn" id="jump-open" type="button" title="Song list">☰</button>
+    </div>
+  </div>
+  <div class="play-body">
+    <div class="play-tapzone left" id="tap-left"></div>
+    <div class="play-content" id="play-content">
+      <div class="play-heading-row">
+        <div class="play-title-group">
+          <div class="play-title" id="play-title"></div>
+          <div class="play-title-key" id="play-title-key"></div>
+        </div>
+        <div class="play-sound" id="play-sound"></div>
+      </div>
+      <pre class="play-chords" id="play-chords"></pre>
+    </div>
+    <div class="play-tapzone right" id="tap-right"></div>
+  </div>
+  <div class="play-bottom visible" id="play-bottom">
+    <button class="btn btn-ghost play-nav-btn" id="play-prev" type="button">‹ Prev</button>
+    <div class="play-dots" id="play-dots"></div>
+    <button class="btn btn-accent play-nav-btn" id="play-next" type="button">Next ›</button>
+  </div>
+</div>
+<div class="jump-scrim" id="jump-scrim"></div>
+<div class="jump-panel" id="jump-panel">
+  <h3>Running order</h3>
+  <div id="jump-list"></div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="scripts/play-window.js"></script>
+</body>
+</html>
