@@ -18,12 +18,6 @@
       btn.style.opacity = disabled ? '0.5' : '';
       btn.style.pointerEvents = disabled ? 'none' : '';
     });
-    const status = document.getElementById('storage-status');
-    if (status && !isAuthUnlocked()) {
-      status.textContent = 'Editing locked';
-      status.classList.remove('connected','fallback','error');
-      status.classList.add('error');
-    }
   };
   app.requireAuthForWrite = function(){
     if (isAuthUnlocked()) return true;
