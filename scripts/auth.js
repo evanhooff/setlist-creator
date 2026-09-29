@@ -8,15 +8,17 @@
   }
   app.updateAuthUI = function(){
     const lockBtn = document.getElementById('auth-lock-btn');
-    if (lockBtn) lockBtn.textContent = isAuthUnlocked() ? 'Lock' : 'Unlock';
+    const unlockBtn = document.getElementById('auth-unlock-btn');
+    const unlocked = isAuthUnlocked();
+    if (lockBtn) lockBtn.hidden = !unlocked;
+    if (unlockBtn) unlockBtn.hidden = unlocked;
     const controls = ['add-song-btn','bulk-import-btn','save-setlist-btn','new-setlist-btn','delete-setlist-btn']
       .map(id=>document.getElementById(id));
     controls.forEach(btn=>{
       if (!btn) return;
-      const disabled = !isAuthUnlocked();
+      const disabled = !unlocked;
       btn.disabled = disabled;
-      btn.style.opacity = disabled ? '0.5' : '';
-      btn.style.pointerEvents = disabled ? 'none' : '';
+      btn.classList.toggle('auth-write-disabled', disabled);
     });
   };
   app.requireAuthForWrite = function(){
@@ -35,11 +37,14 @@
   function closeAuthModal(){ document.getElementById('auth-modal-overlay').classList.remove('open'); }
   app.initializeAuth = function(){ if (!isAuthUnlocked()) app.openAuthModal(); };
   document.getElementById('auth-lock-btn').addEventListener('click', ()=>{
-    if (isAuthUnlocked()) {
-      setAuthUnlocked(false);
-      app.showToast('Editing locked');
-      app.openAuthModal();
-    } else app.openAuthModal();
+    if (!isAuthUnlocked()) return;
+    setAuthUnlocked(false);
+    app.showToast('Editing locked');
+    app.openAuthModal();
+  });
+  document.getElementById('auth-unlock-btn').addEventListener('click', ()=>{
+    if (isAuthUnlocked()) return;
+    app.openAuthModal();
   });
   document.getElementById('auth-modal-cancel').addEventListener('click', ()=>{
     closeAuthModal();

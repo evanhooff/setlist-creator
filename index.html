@@ -21,7 +21,14 @@
       <button class="tab" data-tab="build">Setlists</button>
     </nav>
     <div id="storage-status" class="storage-status" aria-live="polite">Checking storage…</div>
-    <button class="btn btn-ghost btn-sm" id="auth-lock-btn" type="button">Lock</button>
+    <button class="btn btn-ghost btn-sm auth-locked auth-action" id="auth-unlock-btn" type="button" aria-label="Unlock editing">
+      <span aria-hidden="true">🔓</span>
+      <span>Unlock</span>
+    </button>
+    <button class="btn btn-ghost btn-sm auth-unlocked auth-action" id="auth-lock-btn" type="button" aria-label="Lock editing" hidden>
+      <span aria-hidden="true">🔒</span>
+      <span>Lock</span>
+    </button>
   </header>
 
   <!-- LIBRARY VIEW -->

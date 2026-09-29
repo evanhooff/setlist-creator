@@ -72,8 +72,12 @@
   .btn-accent{background:var(--amber);color:#1a1408;border-color:var(--amber);}
   .btn-ghost{background:transparent;border-color:var(--border-solid);}
   .btn-danger{background:transparent;color:var(--red);border-color:var(--border-solid);}
+  .auth-locked{color:var(--red);border-color:rgba(217,100,90,.45);background:rgba(217,100,90,.1);}
+  .auth-unlocked{color:var(--teal);border-color:rgba(79,168,143,.45);background:rgba(79,168,143,.1);}
+  .auth-action[hidden]{display:none;}
   .btn-sm{padding:6px 10px;font-size:13px;}
   .btn:disabled{opacity:.4;cursor:not-allowed;}
+  .btn.auth-write-disabled:disabled{opacity:.5;pointer-events:none;}
   .icon-btn{
     background:transparent;border:none;color:var(--text-dim);font-size:16px;
     width:32px;height:32px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;
