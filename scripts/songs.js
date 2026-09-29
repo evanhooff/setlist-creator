@@ -56,11 +56,7 @@
     openSongModal(null);
   });
   document.getElementById('song-modal-cancel').addEventListener('click',()=>{
-    const returnToPlay = state.returnToPlayAfterSongSave;
-    const index = state.returnToPlayIndex;
-    state.returnToPlayAfterSongSave = false;
     document.getElementById('song-modal-overlay').classList.remove('open');
-    if (returnToPlay) app.openPlay(index);
   });
   document.getElementById('song-modal-save').addEventListener('click',async()=>{
     if (!app.requireAuthForWrite()) return;
@@ -77,11 +73,6 @@
     await app.saveSongs();
     document.getElementById('song-modal-overlay').classList.remove('open');
     app.renderSongGrid(); app.renderBuildLibraryList();
-    if (state.returnToPlayAfterSongSave) {
-      const index = state.returnToPlayIndex;
-      state.returnToPlayAfterSongSave = false;
-      app.openPlay(index);
-    }
     app.showToast('Saved');
   });
   function parseBulkImport(text){

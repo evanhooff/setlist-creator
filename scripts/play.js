@@ -23,14 +23,8 @@
     view.classList.toggle('open',isOpen);
     if(!isOpen){hideTop();hideBottom();}
   };
-  function closeSoundEditor(){
-    document.getElementById('play-sound-editor').hidden=false;
-    document.getElementById('play-sound-form').hidden=true;
-    document.getElementById('play-sound-input').value='';
-  }
   function renderPlaySong(){
     const song=state.playSongs[state.playIndex];
-    closeSoundEditor();
     document.getElementById('play-title').textContent=song.title;
     document.getElementById('play-title-key').textContent=song.key?' - '+song.key:'';
     document.getElementById('play-sound').textContent=song.sound||'';
@@ -57,33 +51,10 @@
   };
   document.getElementById('play-btn').addEventListener('click',app.openPlay);
   document.getElementById('play-close').addEventListener('click',()=>app.setPlayViewOpen(false));
-  document.getElementById('play-song-edit').addEventListener('click',()=>{
-    if(!app.requireAuthForWrite())return;
-    const song=state.playSongs[state.playIndex];
-    state.returnToPlayAfterSongSave=true;state.returnToPlayIndex=state.playIndex;
-    app.setPlayViewOpen(false);app.openSongModal(song);
-  });
   document.getElementById('play-next').addEventListener('click',nextSong);
   document.getElementById('play-prev').addEventListener('click',prevSong);
   document.getElementById('tap-left').addEventListener('click',prevSong);
   document.getElementById('tap-right').addEventListener('click',nextSong);
-  document.getElementById('play-sound-edit').addEventListener('click',()=>{
-    if(!app.requireAuthForWrite())return;
-    const input=document.getElementById('play-sound-input');input.value=state.playSongs[state.playIndex].sound||'';
-    document.getElementById('play-sound-editor').hidden=true;
-    document.getElementById('play-sound-form').hidden=false;setTimeout(()=>input.focus(),0);
-  });
-  document.getElementById('play-sound-save').addEventListener('click',async()=>{
-    if(!app.requireAuthForWrite())return;
-    const song=state.playSongs[state.playIndex],sound=document.getElementById('play-sound-input').value.trim();
-    const button=document.getElementById('play-sound-save');button.disabled=true;
-    const saved=await app.updateSongSound(song,sound);button.disabled=false;if(!saved)return;
-    song.sound=sound;app.renderSongGrid();app.renderBuildLibraryList();renderPlaySong();app.showToast('Sound saved');
-  });
-  document.getElementById('play-sound-input').addEventListener('keydown',event=>{
-    if(event.key==='Enter')document.getElementById('play-sound-save').click();
-    if(event.key==='Escape')closeSoundEditor();
-  });
   document.addEventListener('keydown',event=>{
     const {playView:view}=getPlayElements();if(!view||!view.classList.contains('open'))return;
     if(event.key==='ArrowRight')nextSong();if(event.key==='ArrowLeft')prevSong();if(event.key==='Escape')app.setPlayViewOpen(false);

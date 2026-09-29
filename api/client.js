@@ -1,4 +1,4 @@
-const clientScript = String.raw`(function(){
+const clientScript = `(function(){
   "use strict";
   async function request(url, options){
     const response = await fetch(url, options);

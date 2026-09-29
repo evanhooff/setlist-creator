@@ -2,8 +2,7 @@
   "use strict";
   const state = {
     songs: [], setlists: [], draft: null, playSongs: [], playIndex: 0,
-    playFontSize: 18, returnToPlayAfterSongSave: false, returnToPlayIndex: 0,
-    confirmCallback: null
+    playFontSize: 18, confirmCallback: null
   };
   const STORAGE_KEYS = { songs: 'setlist-creator.songs', setlists: 'setlist-creator.setlists' };
   const AUTH_KEYS = { session: 'setlist-creator.auth.session' };
@@ -130,25 +129,6 @@
     }
     app.setStorageStatus('Local fallback active', 'fallback');
     if (!app.writeStorage(STORAGE_KEYS.songs, state.songs)) app.showToast('Could not save — try again');
-  };
-  app.updateSongSound = async function(song, sound){
-    if (await waitForSupabaseConfig()) {
-      try {
-        const { error } = await getSupabaseClient().from('songs').update({ sound }).eq('id', song.id);
-        if (error) throw error;
-        app.setStorageStatus('Supabase connected', 'connected');
-        return true;
-      } catch (error) {
-        console.error('Supabase sound update failed:', error);
-        app.setStorageStatus('Supabase unavailable', 'error');
-        app.showToast('Could not save sound to Supabase — check table/RLS');
-        return false;
-      }
-    }
-    app.setStorageStatus('Local fallback active', 'fallback');
-    const ok = app.writeStorage(STORAGE_KEYS.songs, state.songs.map(item=>item.id===song.id?{...item,sound}:item));
-    if (!ok) app.showToast('Could not save — try again');
-    return ok;
   };
   app.saveSetlists = async function(){
     if (await waitForSupabaseConfig()) {
