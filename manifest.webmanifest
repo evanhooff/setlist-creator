@@ -1,0 +1,26 @@
+{
+  "id": "/",
+  "name": "Setlist Creator",
+  "short_name": "Setlist",
+  "description": "Create setlists and play songs from your repertoire.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#131019",
+  "theme_color": "#131019",
+  "categories": ["music", "productivity"],
+  "icons": [
+    {
+      "src": "/icons/setlist.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/setlist-maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}
