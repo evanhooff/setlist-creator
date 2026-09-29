@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="scripts/config.js"></script>
+<script src="/api/client"></script>
 <link rel="stylesheet" href="styles/style.css">
 </head>
 <body>
@@ -21,7 +21,14 @@
       <button class="tab" data-tab="build">Setlists</button>
     </nav>
     <div id="storage-status" class="storage-status" aria-live="polite">Checking storage…</div>
-    <button class="btn btn-ghost btn-sm" id="auth-lock-btn" type="button">Lock</button>
+    <button class="btn btn-ghost btn-sm auth-locked auth-action" id="auth-unlock-btn" type="button" aria-label="Unlock editing">
+      <span aria-hidden="true">🔓</span>
+      <span>Unlock</span>
+    </button>
+    <button class="btn btn-ghost btn-sm auth-unlocked auth-action" id="auth-lock-btn" type="button" aria-label="Lock editing" hidden>
+      <span aria-hidden="true">🔒</span>
+      <span>Lock</span>
+    </button>
   </header>
 
   <!-- LIBRARY VIEW -->
@@ -184,14 +191,7 @@ Sound: electric
           <div class="play-title" id="play-title"></div>
           <div class="play-title-key" id="play-title-key"></div>
         </div>
-        <div class="play-sound-editor" id="play-sound-editor">
-          <div class="play-sound" id="play-sound"></div>
-          <button class="icon-btn" id="play-sound-edit" type="button" title="Edit sound">✎</button>
-        </div>
-        <div class="play-sound-form" id="play-sound-form" hidden>
-          <input type="text" id="play-sound-input" aria-label="Sound" placeholder="Sound">
-          <button class="icon-btn" id="play-sound-save" type="button" title="Save sound">✓</button>
-        </div>
+        <div class="play-sound" id="play-sound"></div>
       </div>
       <pre class="play-chords" id="play-chords"></pre>
     </div>
@@ -212,5 +212,9 @@ Sound: electric
 <div id="print-area"></div>
 
 <script src="scripts/script.js"></script>
+<script src="scripts/auth.js"></script>
+<script src="scripts/songs.js"></script>
+<script src="scripts/setlists.js"></script>
+<script src="scripts/play.js"></script>
 </body>
 </html>
