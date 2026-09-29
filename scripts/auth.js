@@ -55,11 +55,7 @@
     const value = document.getElementById('auth-password-input').value.trim();
     if (!value) { app.showToast('Enter a password'); return; }
     try {
-      const response = await fetch('/api/validate-password', {
-        method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({password:value})
-      });
-      if (!response.ok) throw new Error('Password check failed');
-      const result = await response.json();
+      const result = await window.SetlistCreatorApi.validatePassword(value);
       if (result.valid) {
         setAuthUnlocked(true);
         closeAuthModal();
