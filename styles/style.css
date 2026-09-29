@@ -284,3 +284,8 @@
   @media(prefers-reduced-motion: reduce){
     *{transition:none !important;animation:none !important;}
   }
+
+  @media (display-mode: standalone) and (pointer: coarse){
+    .play-view .play-top,
+    .play-view .play-bottom{display:none !important;}
+  }

@@ -25,11 +25,7 @@
       }));
       const playUrl = new URL('play.html', window.location.href);
       playUrl.searchParams.set('session', sessionId);
-      const playWindow = window.open(playUrl.href, '_blank');
-      if (!playWindow) {
-        localStorage.removeItem(sessionKey);
-        app.showToast('Allow pop-ups to open the play window');
-      }
+      window.location.assign(playUrl.href);
     } catch (error) {
       console.error('Could not open play window:', error);
       localStorage.removeItem(sessionKey);
