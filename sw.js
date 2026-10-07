@@ -34,6 +34,20 @@ self.addEventListener('fetch', event=>{
   if (url.origin !== self.location.origin) return;
   if (url.pathname === '/api' || url.pathname.startsWith('/api/') || url.hostname.endsWith('.supabase.co')) return;
 
+  if (url.pathname === '/manifest.webmanifest') {
+    event.respondWith((async()=>{
+      const cache = await caches.open(CACHE_NAME);
+      try {
+        const response = await fetch(request);
+        if (response.ok) event.waitUntil(cache.put(request, response.clone()));
+        return response;
+      } catch (error) {
+        return await cache.match(request) || Response.error();
+      }
+    })());
+    return;
+  }
+
   if (request.mode === 'navigate') {
     event.respondWith((async()=>{
       const cache = await caches.open(CACHE_NAME);

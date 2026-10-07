@@ -2,6 +2,7 @@
   "id": "/",
   "name": "Setlist Creator",
   "short_name": "Setlist",
+  "version": "3",
   "description": "Create setlists and play songs from your repertoire.",
   "start_url": "/",
   "scope": "/",
