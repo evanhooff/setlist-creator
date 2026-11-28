@@ -6,10 +6,10 @@
     --border-solid:#373242;
     --text:#f3efe6;
     --text-dim:#9a93a6;
-    --amber:#3de8a4;
-    --amber-soft: #b7ebde;
+    --amber:#e8a33d;
+    --amber-soft:rgba(232,163,61,.14);
     --teal:#4fa88f;
-    --red:#5ad989;
+    --red:#d9645a;
     --font-display:'Bebas Neue', sans-serif;
     --font-ui:'Space Grotesk', sans-serif;
     --font-mono:'JetBrains Mono', monospace;
